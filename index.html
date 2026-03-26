@@ -115,61 +115,59 @@ var matC=gm(0.94,0.12,0.35);
 var matO=gm(0.94,0.18,0.2);
 var matG=gm(0.92,0.14,0.3);
 
-// --- LOGO (flat, sharp strokes — NOT round tubes) ---
+// --- LOGO (flat sharp strokes, correct orientation) ---
 var logo = new THREE.Group();
 var R = 2.0;
 
-// Helper: create a flat arc band (like SVG stroke but as 3D geometry)
-function makeArc(radius, strokeWidth, startAngle, endAngle, depth) {
-  var shape = new THREE.Shape();
-  var inner = radius - strokeWidth / 2;
-  var outer = radius + strokeWidth / 2;
-  var steps = 120;
-  var angleSpan = endAngle - startAngle;
-
-  // Outer edge (forward)
+// Helper: flat arc band (like SVG stroke as 3D shape)
+function makeArc(radius, strokeW, startDeg, endDeg, depth) {
+  var sh = new THREE.Shape();
+  var inner = radius - strokeW / 2;
+  var outer = radius + strokeW / 2;
+  var steps = 128;
+  var s = startDeg * Math.PI / 180;
+  var e = endDeg * Math.PI / 180;
+  var span = e - s;
   for (var i = 0; i <= steps; i++) {
-    var angle = startAngle + (i / steps) * angleSpan;
-    var x = Math.cos(angle) * outer;
-    var y = Math.sin(angle) * outer;
-    if (i === 0) shape.moveTo(x, y);
-    else shape.lineTo(x, y);
+    var a = s + (i / steps) * span;
+    var x = Math.cos(a) * outer, y = Math.sin(a) * outer;
+    if (i === 0) sh.moveTo(x, y); else sh.lineTo(x, y);
   }
-  // Inner edge (backward)
   for (var i = steps; i >= 0; i--) {
-    var angle = startAngle + (i / steps) * angleSpan;
-    shape.lineTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+    var a = s + (i / steps) * span;
+    sh.lineTo(Math.cos(a) * inner, Math.sin(a) * inner);
   }
-  shape.closePath();
-
-  return new THREE.ExtrudeGeometry(shape, {
-    depth: depth,
-    bevelEnabled: false
-  });
+  sh.closePath();
+  return new THREE.ExtrudeGeometry(sh, { depth: depth, bevelEnabled: false });
 }
 
-// C arc: bold, ~320 degrees
-var cStartAngle = (-70) * PI / 180;
-var cEndAngle = (250) * PI / 180;
-var cGeo = makeArc(R, 0.28, cStartAngle, cEndAngle, 0.06);
+// C arc: bold, from -70° to 250° (sweeps 320° = leaves 40° gap... no)
+// We want ~220° of bold arc. Gap is ~140° on the right side.
+// Gap from -70° to +70° (centered on 0° which is the right side)
+// C arc goes from 70° to 290° (= 220° sweep, CCW through top-left-bottom)
+var cGeo = makeArc(R, 0.26, 70, 290, 0.07);
 var cMesh = new THREE.Mesh(cGeo, matC);
-cMesh.position.z = -0.03;
+cMesh.position.z = -0.035;
 logo.add(cMesh);
 
-// O arc: thin, completes the remaining arc
-var oGeo = makeArc(R, 0.06, (250) * PI / 180, (290) * PI / 180, 0.03);
+// O arc: thin, from 290° to 430° (= 70° + 360°) — fills the remaining gap on right side
+var oGeo = makeArc(R, 0.06, 290, 430, 0.04);
 var oMesh = new THREE.Mesh(oGeo, matO);
-oMesh.position.z = -0.015;
+oMesh.position.z = -0.02;
 logo.add(oMesh);
 
-// G element: ┐ shape — flat extruded box shapes
-var gDepth = 0.06;
-var gThick = 0.11;
-var hLen = R * 0.35;
-var vLen = R * 0.32;
-var endX = R * Math.cos(70 * PI / 180);
+// G element: ┐ shape using BoxGeometry (perfectly sharp edges)
+var hLen = R * 0.35;   // horizontal bar length
+var vLen = R * 0.32;   // vertical bar drop
+var gThick = 0.12;     // stroke thickness (visual weight)
+var gDepth = 0.07;     // extrusion depth (same as C arc)
 
-// Horizontal bar — sits on center diameter (y=0)
+// The G's right edge aligns with C arc endpoints
+// C endpoints are at 70° and 290° on circle of radius R
+// At 70°: x = R * cos(70°) = 2.0 * 0.342 = 0.684
+// Horizontal bar: centered vertically at y = 0 (center diameter)
+var endX = R * Math.cos(70 * Math.PI / 180); // ≈ 0.684
+
 var hBar = new THREE.Mesh(
   new THREE.BoxGeometry(hLen, gThick, gDepth),
   matG
@@ -177,7 +175,7 @@ var hBar = new THREE.Mesh(
 hBar.position.set(endX - hLen / 2, 0, 0);
 logo.add(hBar);
 
-// Vertical bar — drops down from right end of horizontal
+// Vertical bar: drops down from right end of horizontal bar
 var vBar = new THREE.Mesh(
   new THREE.BoxGeometry(gThick, vLen, gDepth),
   matG
