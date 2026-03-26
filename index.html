@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Co</title>
+<meta name="description" content="Gold Co — websites, marketing, and digital strategy for local businesses.">
+<meta property="og:title" content="Gold Co">
+<meta property="og:description" content="Websites, marketing, and digital strategy for local businesses.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jgoldco.com">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M126,29 A76,76 0 1,0 126,171' fill='none' stroke='%23C9A84C' stroke-width='8' stroke-linecap='round'/%3E%3Cpath d='M126,171 A76,76 0 0,0 126,29' fill='none' stroke='%23C9A84C' stroke-width='2' stroke-linecap='round'/%3E%3Cpolyline points='99.4,100 126,100 126,124.3' fill='none' stroke='%23C9A84C' stroke-width='6' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#030303}
+body{font-family:'Plus Jakarta Sans',sans-serif;color:#fff;cursor:default}
+canvas{position:fixed;top:0;left:0;z-index:0}
+
+.ui{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+.wordmark{
+  font-size:26px;font-weight:600;letter-spacing:4px;color:#fff;
+  opacity:0;transform:translateY(12px);
+  transition:opacity 1.6s ease,transform 1.6s ease;
+  margin-top:200px;user-select:none
+}
+.wordmark.show{opacity:0.85;transform:translateY(0)}
+.wordmark.hide{opacity:0;transform:translateY(-20px);transition:opacity 0.6s ease,transform 0.6s ease}
+
+.status{
+  position:absolute;bottom:105px;
+  font-size:9px;font-weight:400;letter-spacing:6px;color:#1a1a1a;
+  opacity:0;transition:opacity 3s ease;text-transform:lowercase;user-select:none
+}
+.status.show{opacity:1}
+.status.hide{opacity:0;transition:opacity 0.4s ease}
+
+.cta{
+  position:absolute;bottom:42px;
+  pointer-events:auto;cursor:pointer;padding:20px 40px;user-select:none
+}
+.cta-text{
+  font-size:10px;font-weight:400;letter-spacing:8px;color:#1f1f1f;
+  text-transform:lowercase;
+  transition:color 0.6s ease,letter-spacing 0.9s cubic-bezier(0.23,1,0.32,1)
+}
+.cta:hover .cta-text{color:#C9A84C;letter-spacing:13px}
+.cta-line{
+  width:0;height:0.5px;
+  background:linear-gradient(90deg,transparent,#C9A84C,transparent);
+  margin:8px auto 0;
+  transition:width 0.9s cubic-bezier(0.23,1,0.32,1)
+}
+.cta:hover .cta-line{width:100%}
+.cta-wrap{opacity:0;transition:opacity 2s ease}
+.cta-wrap.show{opacity:1}
+.cta-wrap.hide{opacity:0;pointer-events:none;transition:opacity 0.4s ease}
+
+.contact{
+  position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0
+}
+.contact.active{pointer-events:auto;opacity:1;transition:opacity 0.5s ease 1.8s}
+
+.form-void{
+  width:100%;max-width:380px;padding:0 24px;
+  opacity:0;transform:translateY(30px) scale(0.95);
+  transition:opacity 1.2s ease 2.2s,transform 1.2s cubic-bezier(0.23,1,0.32,1) 2.2s
+}
+.contact.active .form-void{opacity:1;transform:translateY(0) scale(1)}
+
+.form-void input,.form-void textarea{
+  width:100%;padding:16px 0;background:none;border:none;
+  border-bottom:1px solid #111;color:#fff;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:300;
+  letter-spacing:0.5px;outline:none;margin-bottom:28px;
+  transition:border-color 0.5s ease;-webkit-appearance:none;border-radius:0
+}
+.form-void input::placeholder,.form-void textarea::placeholder{color:#1a1a1a;font-weight:300}
+.form-void input:focus,.form-void textarea:focus{border-bottom-color:#C9A84C}
+.form-void textarea{resize:none;min-height:60px;line-height:1.6}
+
+.form-send{
+  display:inline-flex;align-items:center;gap:14px;
+  background:none;border:none;color:#C9A84C;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:500;
+  letter-spacing:5px;cursor:pointer;padding:12px 0;
+  transition:gap 0.5s ease,letter-spacing 0.5s ease;text-transform:lowercase
+}
+.form-send:hover{gap:22px;letter-spacing:7px}
+.form-arrow{
+  display:inline-block;width:24px;height:1px;background:#C9A84C;
+  position:relative;transition:width 0.5s ease
+}
+.form-send:hover .form-arrow{width:36px}
+.form-arrow::after{
+  content:'';position:absolute;right:-1px;top:-3px;
+  width:7px;height:7px;border-right:1px solid #C9A84C;border-top:1px solid #C9A84C;
+  transform:rotate(45deg)
+}
+
+.form-email{
+  display:block;margin-top:48px;font-size:10px;color:#191919;
+  letter-spacing:3px;text-decoration:none;transition:color 0.4s ease
+}
+.form-email:hover{color:#C9A84C}
+
+.back{
+  position:fixed;top:28px;left:28px;z-index:110;
+  color:#1a1a1a;font-size:10px;letter-spacing:3px;cursor:pointer;
+  opacity:0;pointer-events:none;transition:opacity 0.5s ease 2.5s,color 0.3s ease;
+  text-transform:lowercase;user-select:none
+}
+.back.show{opacity:1;pointer-events:auto}
+.back:hover{color:#C9A84C}
+
+.success{display:none;text-align:center}
+.success.show{display:block}
+.success h3{font-size:16px;font-weight:500;color:#C9A84C;letter-spacing:4px;margin-bottom:10px;text-transform:lowercase}
+.success p{font-size:12px;color:#222;letter-spacing:1px}
+.fields{transition:opacity 0.3s}
+.fields.hide{opacity:0;pointer-events:none;display:none}
+
+@media(max-width:600px){
+  .wordmark{font-size:20px;margin-top:160px}
+  .form-void{max-width:320px}
+}
+</style>
+</head>
+<body>
+
+<div class="ui" id="ui">
+  <div class="wordmark" id="wordmark">Gold Co</div>
+  <div class="status" id="status">building something</div>
+  <div class="cta" id="cta" onclick="enterContact()">
+    <div class="cta-wrap" id="cta-wrap">
+      <div class="cta-text">start a project</div>
+      <div class="cta-line"></div>
+    </div>
+  </div>
+</div>
+
+<div class="contact" id="contact">
+  <div class="form-void">
+    <div class="fields" id="fields">
+      <input type="text" id="f-name" placeholder="name" autocomplete="name">
+      <input type="email" id="f-email" placeholder="email" autocomplete="email">
+      <textarea id="f-msg" placeholder="tell us about your project" rows="2"></textarea>
+      <button class="form-send" onclick="sendForm()">send<span class="form-arrow"></span></button>
+    </div>
+    <div class="success" id="success">
+      <h3>sent</h3>
+      <p>we'll be in touch</p>
+    </div>
+    <a href="mailto:jon@jgoldco.com" class="form-email">jon@jgoldco.com</a>
+  </div>
+</div>
+
+<div class="back" id="back" onclick="exitContact()">back</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const W=window.innerWidth,H=window.innerHeight;
+const scene=new THREE.Scene();
+scene.fog=new THREE.FogExp2(0x030303,0.04);
+const camera=new THREE.PerspectiveCamera(50,W/H,0.1,300);
+camera.position.set(0,0,8);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(W,H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setClearColor(0x030303);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
+document.body.prepend(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0x111111,0.8));
+const keyL=new THREE.PointLight(0xC9A84C,3,25);keyL.position.set(4,3,7);scene.add(keyL);
+const rimL=new THREE.PointLight(0xC9A84C,1.2,18);rimL.position.set(-5,-2,4);scene.add(rimL);
+const fillL=new THREE.PointLight(0x6B5520,0.6,25);fillL.position.set(0,-5,6);scene.add(fillL);
+const topL=new THREE.PointLight(0xC9A84C,0.5,20);topL.position.set(0,6,5);scene.add(topL);
+
+const goldC=new THREE.MeshStandardMaterial({color:0xC9A84C,metalness:0.88,roughness:0.22,emissive:0x2A1E08,emissiveIntensity:0.2});
+const goldO=new THREE.MeshStandardMaterial({color:0xC9A84C,metalness:0.9,roughness:0.3,emissive:0x2A1E08,emissiveIntensity:0.1});
+const goldG=new THREE.MeshStandardMaterial({color:0xC9A84C,metalness:0.85,roughness:0.25,emissive:0x2A1E08,emissiveIntensity:0.15});
+
+const logo=new THREE.Group();
+const R=1.8;
+
+const cGeo=new THREE.TorusGeometry(R,0.095,32,120,Math.PI*1.222);
+const cMesh=new THREE.Mesh(cGeo,goldC);
+cMesh.rotation.z=Math.PI*0.5+Math.PI*0.611;
+logo.add(cMesh);
+
+const oGeo=new THREE.TorusGeometry(R,0.025,16,50,Math.PI*0.778);
+const oMesh=new THREE.Mesh(oGeo,goldO);
+oMesh.rotation.z=Math.PI*0.5+Math.PI*0.611+Math.PI*1.222;
+logo.add(oMesh);
+
+const gShape=new THREE.Shape();
+const hLen=R*0.35,vLen=R*0.32,gW=R*0.04,barH=0.035;
+gShape.moveTo(0,barH);
+gShape.lineTo(hLen,barH);
+gShape.lineTo(hLen,-vLen);
+gShape.lineTo(hLen-gW,-vLen);
+gShape.lineTo(hLen-gW,-barH);
+gShape.lineTo(0,-barH);
+gShape.lineTo(0,barH);
+const gGeo=new THREE.ExtrudeGeometry(gShape,{depth:0.07,bevelEnabled:true,bevelThickness:0.015,bevelSize:0.015,bevelSegments:3});
+const gMesh=new THREE.Mesh(gGeo,goldG);
+const endX=R*Math.cos(70*Math.PI/180);
+gMesh.position.set(endX-hLen,0,-0.035);
+logo.add(gMesh);
+scene.add(logo);
+
+const pCount=800;
+const pGeo=new THREE.BufferGeometry();
+const pPos=new Float32Array(pCount*3);
+const pSizes=new Float32Array(pCount);
+const pSpeeds=new Float32Array(pCount);
+for(let i=0;i<pCount;i++){
+  pPos[i*3]=(Math.random()-0.5)*60;
+  pPos[i*3+1]=(Math.random()-0.5)*60;
+  pPos[i*3+2]=(Math.random()-0.5)*80-10;
+  pSizes[i]=0.3+Math.random()*1.2;
+  pSpeeds[i]=0.2+Math.random()*0.8;
+}
+pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+pGeo.setAttribute('size',new THREE.BufferAttribute(pSizes,1));
+
+const pMat=new THREE.ShaderMaterial({
+  vertexShader:`attribute float size;varying float vAlpha;void main(){vec4 mv=modelViewMatrix*vec4(position,1.0);float d=-mv.z;vAlpha=clamp(1.0-d/50.0,0.02,0.4);gl_PointSize=size*(5.0/max(d,1.0));gl_Position=projectionMatrix*mv;}`,
+  fragmentShader:`varying float vAlpha;void main(){float d=length(gl_PointCoord-vec2(0.5));if(d>0.5)discard;float a=smoothstep(0.5,0.1,d)*vAlpha;gl_FragColor=vec4(0.79,0.66,0.30,a);}`,
+  transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+});
+scene.add(new THREE.Points(pGeo,pMat));
+
+let state='idle',transStart=0;
+const TRANS_DUR=3200;
+const camStart=new THREE.Vector3(0,0,8),camEnd=new THREE.Vector3(0,0,-40);
+const cp1=new THREE.Vector3(1.5,0.8,-5),cp2=new THREE.Vector3(-1,-0.5,-25);
+const rcp1=new THREE.Vector3(-1,-0.3,-25),rcp2=new THREE.Vector3(0.8,0.5,-5);
+
+function cb(t,p0,p1,p2,p3){
+  const m=1-t;
+  return new THREE.Vector3(
+    m*m*m*p0.x+3*m*m*t*p1.x+3*m*t*t*p2.x+t*t*t*p3.x,
+    m*m*m*p0.y+3*m*m*t*p1.y+3*m*t*t*p2.y+t*t*t*p3.y,
+    m*m*m*p0.z+3*m*m*t*p1.z+3*m*t*t*p2.z+t*t*t*p3.z
+  );
+}
+function ease(t){return t<0.5?8*t*t*t*t:1-Math.pow(-2*t+2,4)/2}
+
+function enterContact(){
+  if(state!=='idle')return;
+  state='transitioning';transStart=performance.now();
+  document.getElementById('wordmark').className='wordmark hide';
+  document.getElementById('status').className='status hide';
+  document.getElementById('cta-wrap').className='cta-wrap hide';
+  setTimeout(()=>{
+    document.getElementById('contact').classList.add('active');
+    document.getElementById('back').classList.add('show');
+    state='contact';
+  },TRANS_DUR);
+}
+function exitContact(){
+  if(state!=='contact')return;
+  state='returning';transStart=performance.now();
+  document.getElementById('contact').classList.remove('active');
+  document.getElementById('back').classList.remove('show');
+  setTimeout(()=>{
+    document.getElementById('wordmark').className='wordmark show';
+    document.getElementById('status').className='status show';
+    document.getElementById('cta-wrap').className='cta-wrap show';
+    state='idle';
+  },TRANS_DUR);
+}
+function sendForm(){
+  const n=document.getElementById('f-name').value,e=document.getElementById('f-email').value,m=document.getElementById('f-msg').value;
+  if(!n||!e)return;
+  const s=encodeURIComponent('New project inquiry from '+n);
+  const b=encodeURIComponent('Name: '+n+'\nEmail: '+e+'\n\n'+m);
+  window.location.href='mailto:jon@jgoldco.com?subject='+s+'&body='+b;
+  document.getElementById('fields').className='fields hide';
+  document.getElementById('success').className='success show';
+}
+
+setTimeout(()=>document.getElementById('wordmark').classList.add('show'),1800);
+setTimeout(()=>document.getElementById('status').classList.add('show'),3000);
+setTimeout(()=>document.getElementById('cta-wrap').classList.add('show'),3500);
+
+const clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+  logo.rotation.y=t*0.15;
+  logo.rotation.x=Math.sin(t*0.08)*0.2;
+  logo.rotation.z=Math.sin(t*0.12)*0.05;
+  logo.position.y=Math.sin(t*0.4)*0.08;
+
+  const pp=pGeo.attributes.position.array;
+  for(let i=0;i<pCount;i++){
+    pp[i*3+1]+=Math.sin(t*0.15+i*0.5)*0.003*pSpeeds[i];
+    pp[i*3]+=Math.cos(t*0.1+i*0.3)*0.002*pSpeeds[i];
+    pp[i*3+2]+=Math.sin(t*0.08+i*0.7)*0.001*pSpeeds[i];
+  }
+  pGeo.attributes.position.needsUpdate=true;
+
+  if(state==='idle'){
+    camera.position.x=Math.sin(t*0.06)*0.4;
+    camera.position.y=Math.cos(t*0.04)*0.2;
+    camera.position.z=8+Math.sin(t*0.03)*0.3;
+    camera.lookAt(0,0,0);
+  }else if(state==='transitioning'){
+    const el=performance.now()-transStart;
+    const p=Math.min(el/TRANS_DUR,1),e2=ease(p);
+    const pos=cb(e2,camStart,cp1,cp2,camEnd);
+    pos.x+=Math.sin(e2*Math.PI*2.5)*0.3*(1-e2);
+    pos.y+=Math.sin(e2*Math.PI*1.8)*0.2*(1-e2);
+    camera.position.copy(pos);
+    const lp=Math.min(e2+0.05,1);
+    camera.lookAt(cb(lp,camStart,cp1,cp2,camEnd));
+  }else if(state==='contact'){
+    camera.position.x=Math.sin(t*0.04)*0.15;
+    camera.position.y=Math.cos(t*0.03)*0.1;
+    camera.position.z=-40;
+    camera.lookAt(0,0,-45);
+  }else if(state==='returning'){
+    const el=performance.now()-transStart;
+    const p=Math.min(el/TRANS_DUR,1),e2=ease(p);
+    const pos=cb(e2,camEnd,rcp1,rcp2,camStart);
+    pos.x+=Math.sin(e2*Math.PI*2)*0.2*e2;
+    pos.y+=Math.sin(e2*Math.PI*1.5)*0.15*e2;
+    camera.position.copy(pos);
+    const lp=Math.min(e2+0.05,1);
+    camera.lookAt(cb(lp,camEnd,rcp1,rcp2,camStart));
+  }
+  keyL.position.set(camera.position.x+4,camera.position.y+3,camera.position.z+5);
+  rimL.position.set(camera.position.x-5,camera.position.y-2,camera.position.z+3);
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+</script>
+</body>
+</html>
