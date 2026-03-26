@@ -15,23 +15,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#030303}
+html,body{width:100%;height:100%;overflow:hidden;background:#020202}
 body{font-family:'Plus Jakarta Sans',sans-serif;color:#fff;cursor:default}
 canvas{position:fixed;top:0;left:0;z-index:0}
 
 .ui{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
 
 .wordmark{
-  font-size:26px;font-weight:600;letter-spacing:4px;color:#fff;
+  font-size:28px;font-weight:600;letter-spacing:5px;color:#fff;
   opacity:0;transform:translateY(12px);
   transition:opacity 1.6s ease,transform 1.6s ease;
-  margin-top:200px;user-select:none
+  margin-top:240px;user-select:none
 }
-.wordmark.show{opacity:0.85;transform:translateY(0)}
+.wordmark.show{opacity:0.9;transform:translateY(0)}
 .wordmark.hide{opacity:0;transform:translateY(-20px);transition:opacity 0.6s ease,transform 0.6s ease}
 
 .status{
-  position:absolute;bottom:105px;
+  position:absolute;bottom:110px;
   font-size:9px;font-weight:400;letter-spacing:6px;color:#1a1a1a;
   opacity:0;transition:opacity 3s ease;text-transform:lowercase;user-select:none
 }
@@ -163,45 +163,70 @@ canvas{position:fixed;top:0;left:0;z-index:0}
 <div class="back" id="back" onclick="exitContact()">back</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script>
 const W=window.innerWidth,H=window.innerHeight;
 const scene=new THREE.Scene();
-scene.fog=new THREE.FogExp2(0x030303,0.04);
+scene.fog=new THREE.FogExp2(0x020202,0.04);
 const camera=new THREE.PerspectiveCamera(50,W/H,0.1,300);
-camera.position.set(0,0,8);
+camera.position.set(0,0,5.5);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(W,H);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.setClearColor(0x030303);
+renderer.setClearColor(0x020202);
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.1;
+renderer.toneMappingExposure=1.4;
 document.body.prepend(renderer.domElement);
 
-scene.add(new THREE.AmbientLight(0x111111,0.8));
-const keyL=new THREE.PointLight(0xC9A84C,3,25);keyL.position.set(4,3,7);scene.add(keyL);
-const rimL=new THREE.PointLight(0xC9A84C,1.2,18);rimL.position.set(-5,-2,4);scene.add(rimL);
-const fillL=new THREE.PointLight(0x6B5520,0.6,25);fillL.position.set(0,-5,6);scene.add(fillL);
-const topL=new THREE.PointLight(0xC9A84C,0.5,20);topL.position.set(0,6,5);scene.add(topL);
+/* Bloom post-processing — graceful fallback if imports fail */
+let composer=null;
+try{
+  if(THREE.EffectComposer&&THREE.RenderPass&&THREE.UnrealBloomPass){
+    composer=new THREE.EffectComposer(renderer);
+    composer.addPass(new THREE.RenderPass(scene,camera));
+    const bloom=new THREE.UnrealBloomPass(new THREE.Vector2(W,H),0.4,0.6,0.8);
+    composer.addPass(bloom);
+  }
+}catch(e){composer=null;}
 
-const goldC=new THREE.MeshStandardMaterial({color:0xC9A84C,metalness:0.88,roughness:0.22,emissive:0x2A1E08,emissiveIntensity:0.2});
-const goldO=new THREE.MeshStandardMaterial({color:0xC9A84C,metalness:0.9,roughness:0.3,emissive:0x2A1E08,emissiveIntensity:0.1});
-const goldG=new THREE.MeshStandardMaterial({color:0xC9A84C,metalness:0.85,roughness:0.25,emissive:0x2A1E08,emissiveIntensity:0.15});
+/* Lighting — 7 lights, dramatic cinematic setup */
+scene.add(new THREE.AmbientLight(0x080808,0.5));
+const keyL=new THREE.PointLight(0xC9A84C,4,30);keyL.position.set(5,4,8);scene.add(keyL);
+const key2L=new THREE.PointLight(0xFFD700,2,25);key2L.position.set(-4,3,7);scene.add(key2L);
+const rim1L=new THREE.PointLight(0xC9A84C,2.5,20);rim1L.position.set(-6,-1,-4);scene.add(rim1L);
+const rim2L=new THREE.PointLight(0x8B6914,1.5,20);rim2L.position.set(5,-2,-5);scene.add(rim2L);
+const topL=new THREE.PointLight(0xFFD700,1,20);topL.position.set(0,7,0);scene.add(topL);
+const backL=new THREE.PointLight(0xC9A84C,1.5,20);backL.position.set(0,0,-6);scene.add(backL);
 
+/* Materials — polished gold jewelry */
+const goldC=new THREE.MeshStandardMaterial({color:0xC9A84C,metalness:0.95,roughness:0.12,emissive:0x4A3510,emissiveIntensity:0.35});
+const goldO=new THREE.MeshStandardMaterial({color:0xC9A84C,metalness:0.93,roughness:0.18,emissive:0x4A3510,emissiveIntensity:0.28});
+const goldG=new THREE.MeshStandardMaterial({color:0xC9A84C,metalness:0.92,roughness:0.20,emissive:0x4A3510,emissiveIntensity:0.25});
+
+/* Logo mark — three pieces */
 const logo=new THREE.Group();
-const R=1.8;
+const R=2.0;
 
-const cGeo=new THREE.TorusGeometry(R,0.095,32,120,Math.PI*1.222);
+/* C arc — 220°, thick tube (chunky gold ring) */
+const cGeo=new THREE.TorusGeometry(R,0.14,32,120,Math.PI*1.222);
 const cMesh=new THREE.Mesh(cGeo,goldC);
 cMesh.rotation.z=Math.PI*0.5+Math.PI*0.611;
 logo.add(cMesh);
 
-const oGeo=new THREE.TorusGeometry(R,0.025,16,50,Math.PI*0.778);
+/* O arc — 140°, thinner tube */
+const oGeo=new THREE.TorusGeometry(R,0.04,16,50,Math.PI*0.778);
 const oMesh=new THREE.Mesh(oGeo,goldO);
 oMesh.rotation.z=Math.PI*0.5+Math.PI*0.611+Math.PI*1.222;
 logo.add(oMesh);
 
+/* G element — extruded ┐ shape */
 const gShape=new THREE.Shape();
-const hLen=R*0.35,vLen=R*0.32,gW=R*0.04,barH=0.035;
+const hLen=R*0.35,vLen=R*0.32,gW=0.05,barH=0.025;
 gShape.moveTo(0,barH);
 gShape.lineTo(hLen,barH);
 gShape.lineTo(hLen,-vLen);
@@ -216,7 +241,8 @@ gMesh.position.set(endX-hLen,0,-0.035);
 logo.add(gMesh);
 scene.add(logo);
 
-const pCount=800;
+/* Particles — 1200, spread across 60x60x80 volume */
+const pCount=1200;
 const pGeo=new THREE.BufferGeometry();
 const pPos=new Float32Array(pCount*3);
 const pSizes=new Float32Array(pCount);
@@ -232,15 +258,32 @@ pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
 pGeo.setAttribute('size',new THREE.BufferAttribute(pSizes,1));
 
 const pMat=new THREE.ShaderMaterial({
-  vertexShader:`attribute float size;varying float vAlpha;void main(){vec4 mv=modelViewMatrix*vec4(position,1.0);float d=-mv.z;vAlpha=clamp(1.0-d/50.0,0.02,0.4);gl_PointSize=size*(5.0/max(d,1.0));gl_Position=projectionMatrix*mv;}`,
-  fragmentShader:`varying float vAlpha;void main(){float d=length(gl_PointCoord-vec2(0.5));if(d>0.5)discard;float a=smoothstep(0.5,0.1,d)*vAlpha;gl_FragColor=vec4(0.79,0.66,0.30,a);}`,
+  vertexShader:`
+    attribute float size;
+    varying float vAlpha;
+    void main(){
+      vec4 mv=modelViewMatrix*vec4(position,1.0);
+      float d=-mv.z;
+      vAlpha=clamp(1.0-d/50.0,0.02,0.5);
+      gl_PointSize=size*(6.0/max(d,1.0));
+      gl_Position=projectionMatrix*mv;
+    }`,
+  fragmentShader:`
+    varying float vAlpha;
+    void main(){
+      float d=length(gl_PointCoord-vec2(0.5));
+      if(d>0.5)discard;
+      float a=smoothstep(0.5,0.1,d)*vAlpha;
+      gl_FragColor=vec4(0.79,0.66,0.30,a);
+    }`,
   transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
 });
 scene.add(new THREE.Points(pGeo,pMat));
 
+/* Camera transition state */
 let state='idle',transStart=0;
 const TRANS_DUR=3200;
-const camStart=new THREE.Vector3(0,0,8),camEnd=new THREE.Vector3(0,0,-40);
+const camStart=new THREE.Vector3(0,0,5.5),camEnd=new THREE.Vector3(0,0,-40);
 const cp1=new THREE.Vector3(1.5,0.8,-5),cp2=new THREE.Vector3(-1,-0.5,-25);
 const rcp1=new THREE.Vector3(-1,-0.3,-25),rcp2=new THREE.Vector3(0.8,0.5,-5);
 
@@ -288,19 +331,24 @@ function sendForm(){
   document.getElementById('success').className='success show';
 }
 
+/* Reveal sequence */
 setTimeout(()=>document.getElementById('wordmark').classList.add('show'),1800);
 setTimeout(()=>document.getElementById('status').classList.add('show'),3000);
 setTimeout(()=>document.getElementById('cta-wrap').classList.add('show'),3500);
 
+/* Animation loop */
 const clock=new THREE.Clock();
 function animate(){
   requestAnimationFrame(animate);
   const t=clock.getElapsedTime();
-  logo.rotation.y=t*0.15;
-  logo.rotation.x=Math.sin(t*0.08)*0.2;
-  logo.rotation.z=Math.sin(t*0.12)*0.05;
-  logo.position.y=Math.sin(t*0.4)*0.08;
 
+  /* Logo rotation */
+  logo.rotation.y=t*0.12;
+  logo.rotation.x=Math.sin(t*0.07)*0.15;
+  logo.rotation.z=Math.sin(t*0.1)*0.04;
+  logo.position.y=Math.sin(t*0.35)*0.06;
+
+  /* Particle drift */
   const pp=pGeo.attributes.position.array;
   for(let i=0;i<pCount;i++){
     pp[i*3+1]+=Math.sin(t*0.15+i*0.5)*0.003*pSpeeds[i];
@@ -309,10 +357,11 @@ function animate(){
   }
   pGeo.attributes.position.needsUpdate=true;
 
+  /* Camera states */
   if(state==='idle'){
     camera.position.x=Math.sin(t*0.06)*0.4;
     camera.position.y=Math.cos(t*0.04)*0.2;
-    camera.position.z=8+Math.sin(t*0.03)*0.3;
+    camera.position.z=5.5+Math.sin(t*0.03)*0.3;
     camera.lookAt(0,0,0);
   }else if(state==='transitioning'){
     const el=performance.now()-transStart;
@@ -338,9 +387,15 @@ function animate(){
     const lp=Math.min(e2+0.05,1);
     camera.lookAt(cb(lp,camEnd,rcp1,rcp2,camStart));
   }
-  keyL.position.set(camera.position.x+4,camera.position.y+3,camera.position.z+5);
-  rimL.position.set(camera.position.x-5,camera.position.y-2,camera.position.z+3);
-  renderer.render(scene,camera);
+
+  /* Lights subtly follow camera during transitions */
+  keyL.position.set(camera.position.x+5,camera.position.y+4,camera.position.z+6);
+  key2L.position.set(camera.position.x-4,camera.position.y+3,camera.position.z+5);
+  rim1L.position.set(camera.position.x-6,camera.position.y-1,camera.position.z-4);
+  rim2L.position.set(camera.position.x+5,camera.position.y-2,camera.position.z-5);
+
+  /* Render with bloom or fallback */
+  if(composer){composer.render();}else{renderer.render(scene,camera);}
 }
 animate();
 
@@ -348,6 +403,7 @@ window.addEventListener('resize',()=>{
   camera.aspect=window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth,window.innerHeight);
+  if(composer)composer.setSize(window.innerWidth,window.innerHeight);
 });
 </script>
 </body>
