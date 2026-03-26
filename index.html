@@ -19,7 +19,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#020202}
 body{font-family:'Plus Jakarta Sans',sans-serif;color:#fff}
 canvas{position:fixed;top:0;left:0;z-index:0}
 .ui{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.wm{font-size:28px;font-weight:600;letter-spacing:6px;color:rgba(255,255,255,0.9);opacity:0;transform:translateY(14px);transition:opacity 1.8s ease,transform 1.8s ease;margin-top:280px;user-select:none}
+.wm{font-size:28px;font-weight:600;letter-spacing:6px;color:rgba(255,255,255,0.9);opacity:0;transform:translateY(14px);transition:opacity 1.8s ease,transform 1.8s ease;margin-top:340px;user-select:none}
 .wm.on{opacity:1;transform:translateY(0)}
 .wm.off{opacity:0;transform:translateY(-20px);transition:opacity 0.5s,transform 0.5s}
 .sub{position:absolute;bottom:112px;font-size:10px;font-weight:400;letter-spacing:5px;color:rgba(255,255,255,0.13);opacity:0;transition:opacity 3s;text-transform:lowercase;user-select:none}
@@ -62,7 +62,7 @@ canvas{position:fixed;top:0;left:0;z-index:0}
 </head>
 <body>
 <div class="ui" id="ui">
-<div class="wm" id="wm">Gold Co</div>
+<div class="wm" id="wm">GOLD CO</div>
 <div class="sub" id="sub">still loading</div>
 <div class="cta-zone" onclick="go()"><div class="cta-inner" id="cta"><div class="cta-t">start a project</div><div class="cta-l"></div></div></div>
 </div>
@@ -168,6 +168,7 @@ var gDepth = 0.07;     // extrusion depth (same as C arc)
 // Horizontal bar: centered vertically at y = 0 (center diameter)
 var endX = R * Math.cos(70 * Math.PI / 180); // ≈ 0.684
 
+// Horizontal bar of ┐
 var hBar = new THREE.Mesh(
   new THREE.BoxGeometry(hLen, gThick, gDepth),
   matG
@@ -175,12 +176,12 @@ var hBar = new THREE.Mesh(
 hBar.position.set(endX - hLen / 2, 0, 0);
 logo.add(hBar);
 
-// Vertical bar: drops down from right end of horizontal bar
+// Vertical bar of ┐ — top edge flush with top edge of horizontal bar
 var vBar = new THREE.Mesh(
   new THREE.BoxGeometry(gThick, vLen, gDepth),
   matG
 );
-vBar.position.set(endX, -vLen / 2, 0);
+vBar.position.set(endX, -(vLen / 2) + (gThick / 2), 0);
 logo.add(vBar);
 
 scene.add(logo);
