@@ -37,8 +37,8 @@ canvas{position:fixed;top:0;left:0;z-index:0}
 .co.on{pointer-events:auto;opacity:1;transition:opacity 0.5s ease 2s}
 .fv{width:100%;max-width:380px;padding:0 24px;opacity:0;transform:translateY(30px) scale(0.95);transition:opacity 1.2s ease 2.4s,transform 1.2s cubic-bezier(0.23,1,0.32,1) 2.4s}
 .co.on .fv{opacity:1;transform:translateY(0) scale(1)}
-.fv input,.fv textarea{width:100%;padding:16px 0;background:none;border:none;border-bottom:1px solid rgba(255,255,255,0.08);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:300;letter-spacing:0.5px;outline:none;margin-bottom:28px;transition:border-color 0.5s;-webkit-appearance:none;border-radius:0}
-.fv input::placeholder,.fv textarea::placeholder{color:rgba(255,255,255,0.15)}
+.fv input,.fv textarea{width:100%;padding:16px 0;background:none;border:none;border-bottom:1px solid rgba(255,255,255,0.15);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:300;letter-spacing:0.5px;outline:none;margin-bottom:28px;transition:border-color 0.5s;-webkit-appearance:none;border-radius:0}
+.fv input::placeholder,.fv textarea::placeholder{color:rgba(255,255,255,0.25)}
 .fv input:focus,.fv textarea:focus{border-bottom-color:#C9A84C}
 .fv textarea{resize:none;min-height:60px;line-height:1.6}
 .fb{display:inline-flex;align-items:center;gap:14px;background:none;border:none;color:#C9A84C;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:5px;cursor:pointer;padding:12px 0;transition:gap 0.5s,letter-spacing 0.5s;text-transform:lowercase}
@@ -46,7 +46,7 @@ canvas{position:fixed;top:0;left:0;z-index:0}
 .fa{display:inline-block;width:24px;height:1px;background:#C9A84C;position:relative;transition:width 0.5s}
 .fb:hover .fa{width:36px}
 .fa::after{content:'';position:absolute;right:-1px;top:-3px;width:7px;height:7px;border-right:1px solid #C9A84C;border-top:1px solid #C9A84C;transform:rotate(45deg)}
-.fe{display:block;margin-top:48px;font-size:10px;color:rgba(255,255,255,0.1);letter-spacing:3px;text-decoration:none;transition:color 0.4s}
+.fe{display:block;margin-top:48px;font-size:10px;color:rgba(255,255,255,0.18);letter-spacing:3px;text-decoration:none;transition:color 0.4s}
 .fe:hover{color:#C9A84C}
 .bk{position:fixed;top:28px;left:28px;z-index:110;color:rgba(255,255,255,0.12);font-size:10px;letter-spacing:3px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 0.5s ease 2.8s,color 0.3s;text-transform:lowercase;user-select:none}
 .bk.on{opacity:1;pointer-events:auto}
@@ -63,7 +63,7 @@ canvas{position:fixed;top:0;left:0;z-index:0}
 <body>
 <div class="ui" id="ui">
 <div class="wm" id="wm">Gold Co</div>
-<div class="sub" id="sub">building something</div>
+<div class="sub" id="sub">still loading</div>
 <div class="cta-zone" onclick="go()"><div class="cta-inner" id="cta"><div class="cta-t">start a project</div><div class="cta-l"></div></div></div>
 </div>
 <div class="co" id="co">
@@ -115,32 +115,76 @@ var matC=gm(0.94,0.12,0.35);
 var matO=gm(0.94,0.18,0.2);
 var matG=gm(0.92,0.14,0.3);
 
-// --- LOGO ---
-var logo=new THREE.Group();
-var R=2.0;
+// --- LOGO (flat, sharp strokes — NOT round tubes) ---
+var logo = new THREE.Group();
+var R = 2.0;
 
-// C arc
-var cM=new THREE.Mesh(new THREE.TorusGeometry(R,0.14,48,160,PI*1.222),matC);
-cM.rotation.z=PI*0.5+PI*0.611;
-logo.add(cM);
+// Helper: create a flat arc band (like SVG stroke but as 3D geometry)
+function makeArc(radius, strokeWidth, startAngle, endAngle, depth) {
+  var shape = new THREE.Shape();
+  var inner = radius - strokeWidth / 2;
+  var outer = radius + strokeWidth / 2;
+  var steps = 120;
+  var angleSpan = endAngle - startAngle;
 
-// O arc
-var oM=new THREE.Mesh(new THREE.TorusGeometry(R,0.04,24,80,PI*0.778),matO);
-oM.rotation.z=PI*0.5+PI*0.611+PI*1.222;
-logo.add(oM);
+  // Outer edge (forward)
+  for (var i = 0; i <= steps; i++) {
+    var angle = startAngle + (i / steps) * angleSpan;
+    var x = Math.cos(angle) * outer;
+    var y = Math.sin(angle) * outer;
+    if (i === 0) shape.moveTo(x, y);
+    else shape.lineTo(x, y);
+  }
+  // Inner edge (backward)
+  for (var i = steps; i >= 0; i--) {
+    var angle = startAngle + (i / steps) * angleSpan;
+    shape.lineTo(Math.cos(angle) * inner, Math.sin(angle) * inner);
+  }
+  shape.closePath();
 
-// G element
-var gs=new THREE.Shape();
-var hL=R*0.35,vL=R*0.32,gW=0.055,bH=0.045;
-gs.moveTo(0,bH);gs.lineTo(hL,bH);gs.lineTo(hL,-vL);
-gs.lineTo(hL-gW,-vL);gs.lineTo(hL-gW,-bH);gs.lineTo(0,-bH);gs.closePath();
-var gM=new THREE.Mesh(
-  new THREE.ExtrudeGeometry(gs,{depth:0.09,bevelEnabled:true,bevelThickness:0.02,bevelSize:0.02,bevelSegments:4}),
+  return new THREE.ExtrudeGeometry(shape, {
+    depth: depth,
+    bevelEnabled: false
+  });
+}
+
+// C arc: bold, ~320 degrees
+var cStartAngle = (-70) * PI / 180;
+var cEndAngle = (250) * PI / 180;
+var cGeo = makeArc(R, 0.28, cStartAngle, cEndAngle, 0.06);
+var cMesh = new THREE.Mesh(cGeo, matC);
+cMesh.position.z = -0.03;
+logo.add(cMesh);
+
+// O arc: thin, completes the remaining arc
+var oGeo = makeArc(R, 0.06, (250) * PI / 180, (290) * PI / 180, 0.03);
+var oMesh = new THREE.Mesh(oGeo, matO);
+oMesh.position.z = -0.015;
+logo.add(oMesh);
+
+// G element: ┐ shape — flat extruded box shapes
+var gDepth = 0.06;
+var gThick = 0.11;
+var hLen = R * 0.35;
+var vLen = R * 0.32;
+var endX = R * Math.cos(70 * PI / 180);
+
+// Horizontal bar — sits on center diameter (y=0)
+var hBar = new THREE.Mesh(
+  new THREE.BoxGeometry(hLen, gThick, gDepth),
   matG
 );
-var eX=R*Math.cos(70*PI/180);
-gM.position.set(eX-hL,0,-0.045);
-logo.add(gM);
+hBar.position.set(endX - hLen / 2, 0, 0);
+logo.add(hBar);
+
+// Vertical bar — drops down from right end of horizontal
+var vBar = new THREE.Mesh(
+  new THREE.BoxGeometry(gThick, vLen, gDepth),
+  matG
+);
+vBar.position.set(endX, -vLen / 2, 0);
+logo.add(vBar);
+
 scene.add(logo);
 
 // --- PARTICLES: LAYER 1 — CLOSE ATMOSPHERE (400) ---
